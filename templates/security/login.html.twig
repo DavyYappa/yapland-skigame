@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inloggen{% endblock %}
+
+{% block body %}
+<section class="card narrow">
+    <h1>Inloggen</h1>
+    <p class="muted">Met je Yappa-account.</p>
+
+    {% if error %}
+        <p class="error" role="alert">
+            {%- if error.messageKey starts with 'Too many' -%}
+                Te veel pogingen. Probeer het over een kwartier opnieuw.
+            {%- elseif error.messageKey starts with 'Invalid CSRF' -%}
+                De pagina was verlopen. Probeer opnieuw in te loggen.
+            {%- else -%}
+                E-mailadres of wachtwoord klopt niet.
+            {%- endif -%}
+        </p>
+    {% endif %}
+
+    <form method="post" class="stack">
+        <label for="username">E-mailadres</label>
+        <input type="email" id="username" name="_username" value="{{ last_username }}" autocomplete="email" required autofocus>
+
+        <label for="password">Wachtwoord</label>
+        <input type="password" id="password" name="_password" autocomplete="current-password" required>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <button type="submit" class="btn">Inloggen</button>
+    </form>
+</section>
+{% endblock %}

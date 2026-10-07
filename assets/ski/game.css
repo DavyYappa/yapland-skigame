@@ -1,0 +1,125 @@
+/*
+ * Game page: Yapland fonts, neutrals and square corners (tokens.css).
+ * The client's colors arrive as --primary, --secondary, --accent and --on-primary on <body>
+ * and only color what belongs to the client: skier, flags, buttons, score.
+ */
+:root {
+    --snow: #F7FAFD;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body.ski {
+    background: var(--snow);
+    color: var(--ink);
+    font-family: var(--f-body);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-bar {
+    background: var(--black);
+    color: var(--white);
+    text-align: center;
+    padding: 7px 12px;
+}
+.preview-bar.label { color: var(--white); }
+
+.stage { position: relative; flex: 1; min-height: 0; min-width: 0; overflow: hidden; touch-action: none; user-select: none; }
+.stage canvas { position: absolute; inset: 0; display: block; }
+
+.hud {
+    position: absolute;
+    top: max(14px, env(safe-area-inset-top));
+    right: 16px;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-size: 18px;
+    padding: 8px 16px;
+}
+
+.panel {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: min(400px, calc(100% - 32px));
+    height: fit-content;
+    max-height: calc(100% - 32px);
+    overflow-y: auto;
+    background: var(--white);
+    border-top: 6px solid var(--primary);
+    box-shadow: 0 16px 48px rgba(17, 17, 17, .16);
+    padding: 26px 24px 18px;
+    display: grid;
+    gap: 14px;
+    justify-items: center;
+    text-align: center;
+}
+.panel[hidden] { display: none; }
+
+.logo { max-width: 180px; max-height: 72px; object-fit: contain; }
+.message {
+    margin: 0;
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 1.35;
+    text-wrap: balance;
+}
+.you { margin: 0; color: var(--mid); }
+.you b { color: var(--ink); }
+.howto { margin: 0; color: var(--mid); font-size: 13px; max-width: 32ch; }
+.final { margin: 0; display: grid; gap: 4px; }
+.final b {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+.status { margin: 0; color: var(--mid); font-size: 14px; }
+.status:empty { display: none; }
+
+.play {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 15px;
+    background: var(--primary);
+    color: var(--on-primary);
+    border: 0;
+    padding: 14px 36px;
+    cursor: pointer;
+}
+.play:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.board { list-style: none; counter-reset: rank; margin: 0; padding: 0; width: 100%; text-align: left; }
+.board[hidden] { display: none; }
+.board li {
+    counter-increment: rank;
+    display: flex;
+    gap: 10px;
+    padding: 7px 6px;
+    border-bottom: 1px solid var(--grey);
+    font-size: 15px;
+}
+.board li::before { content: counter(rank); width: 1.5em; color: var(--mid); font-variant-numeric: tabular-nums; }
+.board li span { flex: 1; min-width: 0; }
+.board li b { font-variant-numeric: tabular-nums; }
+.board li.me { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+
+.credit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding-top: 12px;
+    border-top: 1px solid var(--grey);
+    width: 100%;
+    justify-content: center;
+    color: var(--mid);
+}
+.credit .ymark { width: 18px; height: 13px; color: var(--ink); }

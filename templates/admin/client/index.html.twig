@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Klanten{% endblock %}
+
+{% block body %}
+<div class="page-head">
+    <div>
+        <h1>Klanten</h1>
+        <p class="muted">Alle spellen staan online tot en met {{ campaign.lastDay|date('d/m/Y') }}. Daarna gaan ze offline en worden de scores gewist.</p>
+    </div>
+    <a class="btn" href="{{ path('admin_client_new') }}">Nieuwe klant</a>
+</div>
+
+{% if clients is empty %}
+    <section class="card empty">
+        <h2>Nog geen klanten</h2>
+        <p class="muted">Zet het eerste spel op met logo, kleuren en kerstwens. De URL maakt de admin zelf aan.</p>
+        <a class="btn" href="{{ path('admin_client_new') }}">Eerste klant opzetten</a>
+    </section>
+{% else %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Klant</th><th>Status</th><th>Scores</th><th>Aangemaakt</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                    <tr>
+                        <td>
+                            <span class="swatches" aria-hidden="true">
+                                <i style="background: {{ client.primaryColor }}"></i><i style="background: {{ client.secondaryColor }}"></i><i style="background: {{ client.accentColor }}"></i>
+                            </span>
+                            <a href="{{ path('admin_client_show', {id: client.id}) }}">{{ client.name }}</a>
+                        </td>
+                        <td><span class="pill {{ client.active ? 'on' : 'off' }}">{{ client.active ? 'Online' : 'Offline' }}</span></td>
+                        <td class="num">{{ score_counts[client.id] }}</td>
+                        <td class="num">{{ client.createdAt|date('d/m/Y') }}</td>
+                        <td><a href="{{ path('admin_client_show', {id: client.id}) }}">Openen</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

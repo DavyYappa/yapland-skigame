@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ client ? client.name : 'Nieuwe klant' }}{% endblock %}
+
+{% block body %}
+<p><a href="{{ client ? path('admin_client_show', {id: client.id}) : path('admin_clients') }}">← Terug</a></p>
+<section class="card">
+    <h1>{{ client ? 'Bewerken: ' ~ client.name : 'Nieuwe klant' }}</h1>
+
+    {{ form_start(form, {attr: {class: 'stack'}}) }}
+        {{ form_row(form.name) }}
+
+        {% if client and client.logoFilename %}
+            <div class="current-logo">
+                <span class="muted">Huidig logo</span>
+                <img src="{{ asset('uploads/logos/' ~ client.logoFilename) }}" alt="">
+            </div>
+        {% endif %}
+        {{ form_row(form.logo) }}
+
+        <div class="colors">
+            {{ form_row(form.primaryColor) }}
+            {{ form_row(form.secondaryColor) }}
+            {{ form_row(form.accentColor) }}
+        </div>
+
+        {{ form_row(form.message) }}
+        <div>
+            <label class="check">{{ form_widget(form.active) }} Online</label>
+            <span class="muted">Uitvinken om het spel klaar te zetten zonder dat de link al werkt.</span>
+        </div>
+
+        <button type="submit" class="btn">{{ client ? 'Opslaan' : 'Spel aanmaken' }}</button>
+    {{ form_end(form) }}
+</section>
+{% endblock %}

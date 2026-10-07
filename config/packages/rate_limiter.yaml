@@ -1,0 +1,7 @@
+framework:
+    rate_limiter:
+        # Scores sent to the scoreboard, per IP address
+        score_submit:
+            policy: sliding_window
+            limit: 20
+            interval: '10 minutes'

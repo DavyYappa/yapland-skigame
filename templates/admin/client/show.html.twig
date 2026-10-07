@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ client.name }}{% endblock %}
+
+{% set game_url = url('ski_play', {token: client.token}) %}
+
+{% block body %}
+<p><a href="{{ path('admin_clients') }}">← Alle klanten</a></p>
+
+<div class="page-head">
+    <div>
+        <h1>{{ client.name }}</h1>
+        <p><span class="pill {{ client.active ? 'on' : 'off' }}">{{ client.active ? 'Online' : 'Offline' }}</span></p>
+    </div>
+    <div class="actions">
+        <a class="btn ghost" href="{{ path('admin_client_preview', {id: client.id}) }}" target="_blank" rel="noopener">Voorbeeld bekijken</a>
+        <a class="btn ghost" href="{{ path('admin_client_edit', {id: client.id}) }}">Bewerken</a>
+        <form method="post" action="{{ path('admin_client_toggle', {id: client.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ client.id) }}">
+            <button class="btn {{ client.active ? 'danger' : '' }}">{{ client.active ? 'Offline halen' : 'Online zetten' }}</button>
+        </form>
+    </div>
+</div>
+
+<div class="grid">
+    <section class="card">
+        <h2>Link naar het spel</h2>
+        <p class="muted">Willekeurig aangemaakt. De naam van de klant staat er niet in.</p>
+        <div class="copy-row">
+            <input type="text" id="game-url" value="{{ game_url }}" readonly>
+            <button type="button" class="btn ghost" data-copy="#game-url">Kopieer</button>
+        </div>
+        {% if client.active %}
+            <p><a href="{{ game_url }}" target="_blank" rel="noopener">Open het spel</a></p>
+        {% else %}
+            <p class="muted">Het spel staat offline. De link geeft nu een 404.</p>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Instellingen</h2>
+        <dl class="facts">
+            <dt>Logo</dt>
+            <dd>{% if client.logoFilename %}<img class="logo-thumb" src="{{ asset('uploads/logos/' ~ client.logoFilename) }}" alt="">{% else %}<span class="muted">geen</span>{% endif %}</dd>
+            <dt>Kleuren</dt>
+            <dd><span class="swatches big" aria-hidden="true"><i style="background: {{ client.primaryColor }}"></i><i style="background: {{ client.secondaryColor }}"></i><i style="background: {{ client.accentColor }}"></i></span> <code>{{ client.primaryColor }} · {{ client.secondaryColor }} · {{ client.accentColor }}</code></dd>
+            <dt>Kerstwens</dt>
+            <dd>{{ client.message }}</dd>
+        </dl>
+    </section>
+</div>
+
+<section class="card">
+    <h2>Handtekening voor de klant</h2>
+    <p class="muted">Kopieer dit blok en stuur het naar de klant. In Outlook of Gmail plak je het in de handtekening of de out-of-office.</p>
+
+    {% set signature %}
+<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;">
+  <tr>
+    {% if client.logoFilename %}<td style="padding:0 12px 0 0;vertical-align:middle;"><a href="{{ game_url }}"><img src="{{ absolute_url(asset('uploads/logos/' ~ client.logoFilename)) }}" alt="" height="40" style="display:block;border:0;height:40px;width:auto;"></a></td>{% endif %}
+    <td style="vertical-align:middle;background:{{ client.primaryColor }};padding:10px 16px;">
+      <a href="{{ game_url }}" style="color:{{ client.textOnPrimary }};text-decoration:none;font-size:14px;font-weight:bold;">Even weg. Speel intussen onze kerstskigame &rarr;</a>
+    </td>
+  </tr>
+</table>
+    {% endset %}
+
+    <div class="signature-preview">{{ signature|raw }}</div>
+    <div class="copy-row">
+        <textarea id="signature-html" rows="6" readonly>{{ signature|trim }}</textarea>
+    </div>
+    <div class="actions">
+        <button type="button" class="btn" data-copy-rich=".signature-preview">Kopieer handtekening</button>
+        <button type="button" class="btn ghost" data-copy="#signature-html">Kopieer als HTML</button>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Scorebord</h2>
+    {% if top is empty %}
+        <p class="muted">Nog geen scores.</p>
+    {% else %}
+        <ol class="board">
+            {% for score in top %}
+                <li><span>{{ score.playerName }}</span><b class="num">{{ score.points }}</b></li>
+            {% endfor %}
+        </ol>
+    {% endif %}
+</section>
+{% endblock %}

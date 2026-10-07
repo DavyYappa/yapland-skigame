@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="nl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <title>{% block title %}Skikerst admin{% endblock %} · Yapland</title>
+        {{ include('_brand.html.twig') }}
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body>
+        {{ include('_ymark.html.twig') }}
+        {% block header %}
+        <header class="topbar">
+            <a class="brand" href="{{ path('admin_clients') }}"><svg class="ymark" aria-hidden="true"><use href="#ysym"></use></svg>Skikerst <span>admin</span></a>
+            {% if app.user %}
+                <nav>
+                    <span class="muted">{{ app.user.email }}</span>
+                    <a href="{{ path('app_logout') }}">Uitloggen</a>
+                </nav>
+            {% endif %}
+        </header>
+        {% endblock %}
+        <main class="page">
+            {% for message in app.flashes('success') %}
+                <p class="flash" role="status">{{ message }}</p>
+            {% endfor %}
+            {% block body %}{% endblock %}
+        </main>
+    </body>
+</html>

@@ -1,0 +1,43 @@
+# Yapland Skikerst (PoC)
+
+Eindejaarscampagne 2026: elke klant krijgt een eigen versie van de ski-out-of-office,
+met logo, kleuren en kerstwens. Yappa zet de spellen op in een kleine admin.
+
+## Lokaal opstarten
+
+Zoals fitfeels: Symfony CLI + Docker voor de database.
+
+```bash
+cp .env.example .env          # .env gaat nooit mee in git
+docker compose up -d          # MySQL 8.4, de Symfony CLI vult DATABASE_URL zelf in
+symfony composer install
+symfony console doctrine:migrations:migrate -n
+symfony console doctrine:fixtures:load -n   # testaccount + twee voorbeeldklanten
+symfony server:start -d
+```
+
+Admin: `/login`. Het lokale testaccount staat in `src/DataFixtures/AppFixtures.php`.
+Een echt account (alleen `@yappa.be`): `symfony console app:user:create naam@yappa.be`.
+
+## Hoe het werkt
+
+- **Klant** (`App\Entity\Client`): naam, logo, drie kleuren, kerstwens, online of niet.
+  De URL is `/ski/{token}` met 12 willekeurige tekens: geen klantnaam in URL's of bestandsnamen.
+- **Spel** (`templates/ski/play.html.twig`, `assets/ski/game.js`): Twig geeft de instellingen
+  door via een `data-config`-attribuut (automatisch ge-escaped). Het spel zelf is een
+  plaatsvervanger tot we de code van de echte out-of-office hebben.
+- **Scorebord** (`App\Entity\Score`): de server kiest een willekeurige naam per bezoeker
+  (`App\Service\PlayerNames`), dus geen persoonsgegevens en geen filter nodig.
+  Een score wordt geweigerd als hij sneller is dan het spel kan (max. 40 punten per seconde
+  sinds het laden) en er gelden max. 20 scores per 10 minuten per IP-adres.
+- **Einde campagne** (`app.campaign_ends_at` in `config/services.yaml`): vanaf 1 februari 2027
+  geeft elk spel een 404. `symfony console app:scores:purge` wist dan alle scores
+  (dagelijks via cron draaien; vóór die datum doet het niets).
+- **Handtekening**: op de pagina van een klant staat een kant-en-klaar blok om te kopiëren
+  en naar de klant te sturen.
+- **Vindbaarheid**: elke spelpagina stuurt `X-Robots-Tag: noindex, nofollow`.
+
+## Huisstijl
+
+Yapland-tokens in `assets/styles/tokens.css` (kleuren, Unbounded + Epilogue), gedeeld door
+admin en spel. De kleuren van de klant kleuren enkel wat van de klant is: skiër, vlaggen, knoppen.

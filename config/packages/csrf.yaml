@@ -1,0 +1,7 @@
+# Session-based CSRF tokens: no JavaScript needed on the login and admin forms
+framework:
+    form:
+        csrf_protection:
+            token_id: submit
+
+    csrf_protection: true

@@ -1,0 +1,30 @@
+/* Yapland brand tokens, shared by the admin and the game */
+:root {
+    --black: #000000;
+    --ink: #111111;
+    --mid: #5F5F5F;
+    --line: #D3D3D3;
+    --grey: #ECECEC;
+    --white: #FFFFFF;
+    --green: #2F6444;
+    --blue: #1D408E;
+    --yellow: #FAF6B2;
+    --peach: #F6BA93;
+    --red: #A3262A;
+    --green-tint: #E3EFE7;
+    --red-tint: #F7E3E3;
+
+    --f-display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
+    --f-body: 'Epilogue', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.label {
+    font-family: var(--f-body);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--mid);
+}
+
+.ymark { width: 28px; height: 20px; display: block; color: currentColor; flex: none; }

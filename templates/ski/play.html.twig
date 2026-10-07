@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Kerstskigame</title>
+    {{ include('_brand.html.twig') }}
+    {{ importmap('ski') }}
+</head>
+{# Colors are validated as #RRGGBB in the admin, so they are safe in a style attribute #}
+<body class="ski" style="--primary: {{ client.primaryColor }}; --secondary: {{ client.secondaryColor }}; --accent: {{ client.accentColor }}; --on-primary: {{ client.textOnPrimary }};">
+    {{ include('_ymark.html.twig') }}
+    {% if preview %}
+        <div class="preview-bar label">Voorbeeld · scores worden niet bewaard</div>
+    {% endif %}
+
+    <div id="ski-game" class="stage" data-config="{{ {
+        logo: client.logoFilename ? asset('uploads/logos/' ~ client.logoFilename) : null,
+        colors: {primary: client.primaryColor, secondary: client.secondaryColor, accent: client.accentColor},
+        message: client.message,
+        playerName: player_name,
+        scoreUrl: score_url,
+        top: top|map(s => {name: s.playerName, points: s.points, me: s.playerName == player_name}),
+    }|json_encode }}">
+        <canvas aria-label="Skispel: ontwijk de bomen en rij door de poortjes"></canvas>
+
+        <div class="hud" hidden>
+            <span class="hud-score">0</span>
+        </div>
+
+        <section class="panel start">
+            {% if client.logoFilename %}
+                <img class="logo" src="{{ asset('uploads/logos/' ~ client.logoFilename) }}" alt="">
+            {% endif %}
+            <p class="message">{{ client.message }}</p>
+            <p class="you">Jij skiet als <b>{{ player_name }}</b></p>
+            <button type="button" class="play">Start</button>
+            <p class="howto">← → of tik links en rechts. Ontwijk de bomen, rij door de poortjes.</p>
+            <p class="credit label"><svg class="ymark" aria-hidden="true"><use href="#ysym"></use></svg>Kerstgame van Yapland</p>
+        </section>
+
+        <section class="panel over" hidden>
+            <p class="final">Je scoorde <b class="final-score">0</b></p>
+            <p class="status" role="status"></p>
+            <ol class="board"></ol>
+            <button type="button" class="play">Nog eens</button>
+            <p class="credit label"><svg class="ymark" aria-hidden="true"><use href="#ysym"></use></svg>Kerstgame van Yapland</p>
+        </section>
+    </div>
+</body>
+</html>
