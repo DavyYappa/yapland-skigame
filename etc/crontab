@@ -1,0 +1,2 @@
+# Installed by hand on Combell (crontab -e). After 31 January 2027 this deletes all scores.
+15 3 * * * cd /data/sites/web/betayappabe/subsites/skigame.yappa.be/deploy/current && php bin/console app:scores:purge --no-interaction >> var/log/purge.log 2>&1

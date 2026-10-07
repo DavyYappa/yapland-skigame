@@ -1,0 +1,15 @@
+# Only staging, on purpose: nobody deploys anything else by mistake.
+hosts:
+    staging:
+        hostname: ssh082.webhosting.be
+        port: 22
+        remote_user: betayappabe
+        http_user: betayappabe
+        forward_agent: true
+        deploy_path: /data/sites/web/betayappabe/subsites/skigame.yappa.be/deploy
+        keep_releases: 3
+        branch: main
+        # htpasswd line (bcrypt) for deploy:basic_auth
+        basic_auth: 'webfolks:$2y$10$qCjOdPwjfkcSjZ8bqN1V7eIZfnji15QxOR5h94U3TBr79Etlv72Xa'
+        labels:
+            stage: staging

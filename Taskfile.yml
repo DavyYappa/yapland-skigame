@@ -1,0 +1,90 @@
+version: '3'
+
+vars:
+    COMPOSER_PATH: symfony composer
+    PHP_PATH: symfony php
+    CONSOLE: symfony console
+    STAGING_SSH: betayappabe@ssh082.webhosting.be
+    STAGING_PATH: /data/sites/web/betayappabe/subsites/skigame.yappa.be/deploy
+
+tasks:
+    default:
+        desc: List available tasks
+        cmds:
+            - task --list
+        silent: true
+
+    # ------------------------------------------------------------------ local
+    install:
+        aliases: [i]
+        desc: 📦 First setup — dependencies, database with demo data, local server
+        preconditions:
+            - sh: test -f .env
+              msg: "Geen .env: `cp .env.example .env` en vul APP_SECRET in."
+        cmds:
+            - '{{.COMPOSER_PATH}} install --no-interaction'
+            - task: docker:up
+            - task: database:reset
+            - task: start
+
+    start:
+        desc: 🚀 Start Docker and the local Symfony server
+        cmds:
+            - task: docker:up
+            - symfony server:start -d
+            - symfony open:local
+
+    stop:
+        desc: 🛑 Stop the local server and Docker
+        cmds:
+            - symfony server:stop
+            - docker compose stop
+
+    docker:up:
+        desc: 🐳 Start MySQL and wait until it answers
+        cmds:
+            - docker compose up -d
+            - |
+                until docker compose exec -T mysql mysqladmin ping -h 127.0.0.1 -uroot -pdev --silent 2>/dev/null; do sleep 1; done
+
+    database:reset:
+        aliases: [db]
+        desc: 🗄️ Empty the local database, migrate and load the demo data
+        cmds:
+            - '{{.CONSOLE}} doctrine:database:drop --force --if-exists'
+            - '{{.CONSOLE}} doctrine:database:create'
+            - '{{.CONSOLE}} doctrine:migrations:migrate --no-interaction'
+            - '{{.CONSOLE}} doctrine:fixtures:load --no-interaction'
+
+    log:
+        desc: 📜 Follow the local server log
+        cmds:
+            - symfony server:log
+
+    # ------------------------------------------------------------------ staging
+    # From your own machine. Deployer uploads the working tree and refuses uncommitted changes.
+    deploy:staging:
+        aliases: [deploy]
+        desc: 🚢 Deploy to staging (skigame.yappa.be, behind basic auth)
+        preconditions:
+            - sh: ssh-add -l >/dev/null 2>&1
+              msg: "Je SSH-agent heeft geen keys: `ssh-add` en probeer opnieuw."
+            - sh: git diff --quiet HEAD
+              msg: "Niet-gecommitte wijzigingen: commit of stash ze eerst."
+        cmds:
+            - '{{.PHP_PATH}} vendor/bin/dep deploy stage=staging {{.CLI_ARGS}}'
+
+    staging:user:
+        desc: '👤 Create or update a Yappa account on staging (task staging:user -- naam@yappa.be)'
+        preconditions:
+            - sh: test -n "{{.CLI_ARGS}}"
+              msg: "Geef een e-mailadres mee: task staging:user -- naam@yappa.be"
+        interactive: true
+        cmds:
+            - ssh -t {{.STAGING_SSH}} 'cd {{.STAGING_PATH}}/current && php bin/console app:user:create {{.CLI_ARGS}}'
+
+    staging:ssh:
+        desc: 🔑 Open a shell in the current release on staging
+        interactive: true
+        cmds:
+            - ssh -t {{.STAGING_SSH}} 'cd {{.STAGING_PATH}}/current && exec $SHELL -l'

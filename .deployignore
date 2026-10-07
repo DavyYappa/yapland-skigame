@@ -1,0 +1,21 @@
+# rsync-excludes for deploy:update_code (deploy.php): what does not go to Combell.
+# Patterns with a leading / are relative to the project root.
+
+# VCS, editors, OS
+/.git/
+/.github/
+/.idea/
+.DS_Store
+
+# Built on the server or shared between releases
+/vendor/
+/var/
+/public/assets/
+/public/uploads/
+/public/bundles/
+/.env
+/.env.*
+
+# Only needed for local development
+/docker-compose.yml
+/README.md
