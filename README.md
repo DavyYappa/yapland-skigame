@@ -53,7 +53,7 @@ Klanten zetten hun spel zelf op, maar alleen met een uitnodiging: één spel per
    `/afmelden/{token}` maakt de link ongeldig. Elke mail heeft een `List-Unsubscribe`-header.
 
 De cronjobs staan in `etc/crontab`. Elke deploy zet ze tussen markeringen in de crontab van het
-Combell-account (`crontab`), zonder de jobs van andere sites te raken; de vorige crontab staat
+Combell-account (`~/.crontab`, gecontroleerd met `crontab -T`), zonder de jobs van andere sites te raken; de vorige staat
 daarna in `crontab.before-deploy` naast `www/`. Een `.crontab`-bestand in de subsite leest Combell niet.
 
 Lokaal vangt Mailpit alle mails op: `symfony open:local:webmail`. Mails uit de wachtrij versturen:
