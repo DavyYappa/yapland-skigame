@@ -45,6 +45,10 @@ class Invitation
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $claimedAt = null;
 
+    /** Set when the contact opted out; kept also after a claim, so the admin always sees it. */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $unsubscribedAt = null;
+
     public function __construct(string $company, string $email)
     {
         $this->company = trim($company);
@@ -98,9 +102,19 @@ class Invitation
         return $this->claimedAt;
     }
 
+    public function getUnsubscribedAt(): ?\DateTimeImmutable
+    {
+        return $this->unsubscribedAt;
+    }
+
+    public function isUnsubscribed(): bool
+    {
+        return null !== $this->unsubscribedAt;
+    }
+
     public function canBeMailed(): bool
     {
-        return InvitationStatus::New === $this->status;
+        return InvitationStatus::New === $this->status && !$this->isUnsubscribed();
     }
 
     public function canBeClaimed(): bool
@@ -135,6 +149,8 @@ class Invitation
 
     public function unsubscribe(): void
     {
+        $this->unsubscribedAt ??= new \DateTimeImmutable();
+        // A claimed game stays claimed; the opt-out still shows in the admin and stops all mail
         if (InvitationStatus::Claimed !== $this->status) {
             $this->status = InvitationStatus::Unsubscribed;
         }

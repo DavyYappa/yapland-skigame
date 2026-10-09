@@ -23,7 +23,7 @@ final class InvitationImporter
     ) {
     }
 
-    /** @return array{added: int, duplicate: int, invalid: list<int>} invalid holds line numbers */
+    /** @return array{added: int, duplicate: int, unsubscribed: int, invalid: list<int>} invalid holds line numbers */
     public function import(string $path): array
     {
         $handle = fopen($path, 'r');
@@ -56,7 +56,8 @@ final class InvitationImporter
         }
         fclose($handle);
 
-        $existing = array_flip($this->invitations->existingEmails(array_keys($rows)));
+        // Known addresses are never added again; that also keeps opted-out contacts out
+        $existing = $this->invitations->existingEmails(array_keys($rows));
         $added = 0;
         foreach ($rows as $email => $company) {
             if (isset($existing[$email])) {
@@ -67,7 +68,9 @@ final class InvitationImporter
         }
         $this->em->flush();
 
-        return ['added' => $added, 'duplicate' => \count($existing), 'invalid' => $invalid];
+        $unsubscribed = \count(array_filter($existing));
+
+        return ['added' => $added, 'duplicate' => \count($existing) - $unsubscribed, 'unsubscribed' => $unsubscribed, 'invalid' => $invalid];
     }
 
     /** @param list<string> $row @return array{string, ?string} */

@@ -12,7 +12,8 @@
 
 <div class="stats">
     {% for status in statuses %}
-        <div class="stat"><span class="label">{{ status.label }}</span><b class="num">{{ counts[status.value] ?? 0 }}</b></div>
+        {# Afgemeld counts every opt-out, also contacts who had already claimed a game #}
+        <div class="stat"><span class="label">{{ status.label }}</span><b class="num">{{ status.value == 'unsubscribed' ? unsubscribed : (counts[status.value] ?? 0) }}</b></div>
     {% endfor %}
 </div>
 
@@ -34,7 +35,7 @@
         <h2>Mails versturen</h2>
         {% if to_mail > 0 %}
             <p><b>{{ to_mail }}</b> {{ to_mail == 1 ? 'nieuwe uitnodiging wacht' : 'nieuwe uitnodigingen wachten' }} op een mail.</p>
-            <p class="muted">Kijk de mail eerst na en stuur jezelf een testmail via <a href="{{ path('admin_mailing') }}">Mail</a>. Wie al een mail kreeg, krijgt er geen tweede.</p>
+            <p class="muted">Kijk de mail eerst na en stuur jezelf een testmail via <a href="{{ path('admin_mailing') }}">Mail</a>. Wie al een mail kreeg of zich afmeldde, krijgt niets.</p>
             <form method="post" action="{{ path('admin_invitations_send') }}" class="confirm-form">
                 <input type="hidden" name="_token" value="{{ csrf_token('invitations_send') }}">
                 <label class="check"><input type="checkbox" required> Ik heb de testmail nagekeken</label>
@@ -63,7 +64,12 @@
                     <tr>
                         <td>{{ invitation.company }}</td>
                         <td class="email">{{ invitation.email }}</td>
-                        <td><span class="pill {{ status in ['claimed'] ? 'on' : (status in ['revoked', 'unsubscribed'] ? 'off' : (status in ['sent', 'queued'] ? 'sent' : 'new')) }}">{{ invitation.status.label }}</span></td>
+                        <td>
+                            <span class="pill {{ status in ['claimed'] ? 'on' : (status in ['revoked', 'unsubscribed'] ? 'off' : (status in ['sent', 'queued'] ? 'sent' : 'new')) }}">{{ invitation.status.label }}</span>
+                            {% if invitation.unsubscribed %}
+                                <span class="optout">{{ status == 'unsubscribed' ? 'Op' : 'Afgemeld op' }} {{ invitation.unsubscribedAt|date('d/m') }}, krijgt geen mails</span>
+                            {% endif %}
+                        </td>
                         <td class="num">{{ invitation.sentAt ? invitation.sentAt|date('d/m H:i') : '–' }}</td>
                         <td>{% if invitation.client %}<a href="{{ path('admin_client_show', {id: invitation.client.id}) }}">Bekijk</a>{% else %}–{% endif %}</td>
                         <td>

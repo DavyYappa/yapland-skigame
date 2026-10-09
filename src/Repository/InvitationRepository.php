@@ -23,10 +23,21 @@ class InvitationRepository extends ServiceEntityRepository
         return $this->findBy([], ['createdAt' => 'DESC', 'id' => 'DESC']);
     }
 
-    /** @return list<Invitation> */
+    /** @return list<Invitation> new invitations of contacts who did not opt out */
     public function findToMail(): array
     {
-        return $this->findBy(['status' => InvitationStatus::New], ['id' => 'ASC']);
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.status = :new')
+            ->andWhere('i.unsubscribedAt IS NULL')
+            ->setParameter('new', InvitationStatus::New)
+            ->orderBy('i.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countUnsubscribed(): int
+    {
+        return $this->count([]) - $this->count(['unsubscribedAt' => null]);
     }
 
     /** @return array<string, int> count per status value */
@@ -47,18 +58,24 @@ class InvitationRepository extends ServiceEntityRepository
         return $counts;
     }
 
-    /** @param list<string> $emails @return list<string> the ones that already exist */
+    /**
+     * @param list<string> $emails
+     *
+     * @return array<string, bool> the ones that already exist, with whether they opted out
+     */
     public function existingEmails(array $emails): array
     {
         if ([] === $emails) {
             return [];
         }
 
-        return array_column($this->createQueryBuilder('i')
-            ->select('i.email')
+        $rows = $this->createQueryBuilder('i')
+            ->select('i.email, i.unsubscribedAt')
             ->andWhere('i.email IN (:emails)')
             ->setParameter('emails', $emails)
             ->getQuery()
-            ->getArrayResult(), 'email');
+            ->getArrayResult();
+
+        return array_combine(array_column($rows, 'email'), array_map(static fn ($r) => null !== $r['unsubscribedAt'], $rows));
     }
 }

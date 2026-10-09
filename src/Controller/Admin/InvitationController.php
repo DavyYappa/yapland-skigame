@@ -36,6 +36,7 @@ class InvitationController extends AbstractController
         return $this->render('admin/invitation/index.html.twig', [
             'invitations' => $this->invitations->findAllNewestFirst(),
             'counts' => $this->invitations->countByStatus(),
+            'unsubscribed' => $this->invitations->countUnsubscribed(),
             'to_mail' => \count($this->invitations->findToMail()),
             'campaign' => $campaign,
             'statuses' => InvitationStatus::cases(),
@@ -63,6 +64,11 @@ class InvitationController extends AbstractController
         $message = 1 === $result['added'] ? '1 uitnodiging toegevoegd.' : \sprintf('%d uitnodigingen toegevoegd.', $result['added']);
         if ($result['duplicate'] > 0) {
             $message .= 1 === $result['duplicate'] ? ' 1 adres stond er al in.' : \sprintf(' %d adressen stonden er al in.', $result['duplicate']);
+        }
+        if ($result['unsubscribed'] > 0) {
+            $message .= 1 === $result['unsubscribed']
+                ? ' 1 adres heeft zich afgemeld en krijgt geen mail.'
+                : \sprintf(' %d adressen hebben zich afgemeld en krijgen geen mail.', $result['unsubscribed']);
         }
         if ([] !== $result['invalid']) {
             $message .= \sprintf(' Overgeslagen, geen geldig bedrijf of e-mailadres: lijn %s.', implode(', ', \array_slice($result['invalid'], 0, 20)));
