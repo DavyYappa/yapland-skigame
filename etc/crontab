@@ -1,4 +1,4 @@
-# Installed into the subsite .crontab by deploy:install_crontab (deploy.php).
+# Installed into the account crontab by deploy:install_crontab (deploy.php) on every deploy.
 # Sends the queued invitation mails, a few at a time.
 * * * * * cd /data/sites/web/betayappabe/subsites/skigame.yappa.be/deploy/current && php bin/console messenger:consume async --time-limit=50 --limit=60 --no-interaction >> var/log/messenger.log 2>&1
 # After 31 January 2027 this deletes all scores; before that it does nothing.

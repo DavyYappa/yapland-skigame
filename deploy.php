@@ -104,13 +104,20 @@ task('deploy:basic_auth', static function (): void {
 
 // ── Cron: mail queue and the score purge ────────────────────────────────────
 //
-// etc/crontab goes between markers into the subsite's .crontab, so a redeploy replaces it.
+// Combell only runs the account's crontab (managed by its `crontab` command), not a .crontab
+// file in the subsite. etc/crontab goes in there between markers, so a redeploy replaces our
+// block and leaves the rest of the account's jobs alone. The previous crontab is kept next to www/.
 task('deploy:install_crontab', static function (): void {
-    $crontab = '{{deploy_path}}/../.crontab';
     $marker = 'yapland-skigame';
-    run(\sprintf('touch %1$s && sed -i "/#### START %2$s ####/,/#### END %2$s ####/d" %1$s', $crontab, $marker));
-    run(\sprintf('{ echo "#### START %2$s ####"; cat {{release_path}}/etc/crontab; echo "#### END %2$s ####"; } >> %1$s', $crontab, $marker));
-})->desc('Install etc/crontab');
+    $backup = '{{deploy_path}}/../crontab.before-deploy';
+    $new = '{{deploy_path}}/../crontab.new';
+    run(\sprintf('crontab -l > %s 2>/dev/null || true', $backup));
+    run(\sprintf('sed "/#### START %1$s ####/,/#### END %1$s ####/d" %2$s > %3$s', $marker, $backup, $new));
+    run(\sprintf('{ echo "#### START %2$s ####"; cat {{release_path}}/etc/crontab; echo "#### END %2$s ####"; } >> %1$s', $new, $marker));
+    run(\sprintf('crontab %1$s && rm -f %1$s', $new));
+    // The first deploys wrote a .crontab in the subsite that Combell never read
+    run('rm -f {{deploy_path}}/../.crontab');
+})->desc('Install etc/crontab into the account crontab');
 
 before('deploy:symlink', 'deploy:install_crontab');
 

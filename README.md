@@ -46,9 +46,15 @@ Klanten zetten hun spel zelf op, maar alleen met een uitnodiging: één spel per
 3. **Verstuur**: de mails gaan in de wachtrij (Messenger, tabel `messenger_messages`) en de cron
    (`etc/crontab`, `messenger:consume async`) verstuurt ze via SendGrid.
 4. De klant opent `/claim/{token}`, kiest logo, kleuren en kerstwens met een live voorbeeld, en
-   publiceert één keer. Daarna toont dezelfde link de spel-link en de handtekening.
-5. Claimen kan tot en met 1 december (`app.claim_ends_at`). Een uitnodiging intrekken of
+   publiceert. Daarna toont dezelfde link de spel-link en de handtekening, en kan de klant
+   via `/claim/{token}/aanpassen` hetzelfde spel nog wijzigen. Eén uitnodiging maakt nooit een
+   tweede spel. Vervangen logo's blijven bewaard, want eerder geplakte handtekeningen wijzen ernaar.
+5. Claimen en aanpassen kan tot en met 1 december (`app.claim_ends_at`). Een uitnodiging intrekken of
    `/afmelden/{token}` maakt de link ongeldig. Elke mail heeft een `List-Unsubscribe`-header.
+
+De cronjobs staan in `etc/crontab`. Elke deploy zet ze tussen markeringen in de crontab van het
+Combell-account (`crontab`), zonder de jobs van andere sites te raken; de vorige crontab staat
+daarna in `crontab.before-deploy` naast `www/`. Een `.crontab`-bestand in de subsite leest Combell niet.
 
 Lokaal vangt Mailpit alle mails op: `symfony open:local:webmail`. Mails uit de wachtrij versturen:
 `symfony console messenger:consume async -vv`.

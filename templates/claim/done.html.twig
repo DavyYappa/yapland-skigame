@@ -7,8 +7,11 @@
 {% block body %}
 <div class="intro">
     <p class="label">Voor {{ invitation.company }}</p>
-    <h1>{{ just_published ? 'Jullie skigame staat online' : 'Jullie skigame' }}</h1>
+    <h1>{{ just_saved ? 'Jullie skigame staat online' : 'Jullie skigame' }}</h1>
     <p class="muted">Bewaar deze pagina: hier vind je altijd je link en je handtekening terug. Het spel blijft online tot en met 31 januari 2027.</p>
+    {% if can_edit %}
+        <p><a class="btn ghost" href="{{ path('claim_edit', {token: invitation.token}) }}">Logo, kleuren of kerstwens aanpassen</a></p>
+    {% endif %}
 </div>
 
 <section class="card">
@@ -33,5 +36,5 @@
     </details>
 </section>
 
-<p class="muted small">Iets fout of wil je iets aanpassen? Mail je contactpersoon bij Yappa.</p>
+<p class="muted small">{% if can_edit %}Aanpassen kan tot en met {{ last_claim_day|date('j') }} december, via deze pagina. Een aanpassing verandert de link en de handtekening niet.{% else %}Iets fout? Mail je contactpersoon bij Yappa.{% endif %}</p>
 {% endblock %}

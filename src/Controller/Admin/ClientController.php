@@ -119,7 +119,7 @@ class ClientController extends AbstractController
     {
         $file = $form->get('logo')->getData();
         if ($file instanceof UploadedFile) {
-            $this->logos->remove($client->getLogoFilename());
+            // The old file stays: signatures pasted earlier still point to it
             $client->setLogoFilename($this->logos->store($file));
         }
     }

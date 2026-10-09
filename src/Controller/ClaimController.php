@@ -19,8 +19,9 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * The page a client reaches from the invitation mail: set up the game once, then copy the
- * signature. The same link keeps showing the result afterwards.
+ * The page a client reaches from the invitation mail: set up the game, then copy the signature.
+ * The same link keeps showing the result, and the client can change that one game until the
+ * claim period ends. One invitation never makes a second game.
  */
 class ClaimController extends AbstractController
 {
@@ -46,10 +47,95 @@ class ClaimController extends AbstractController
             return $this->noindex($this->render('claim/done.html.twig', [
                 'invitation' => $invitation,
                 'client' => $invitation->getClient(),
-                'just_published' => $request->query->getBoolean('klaar'),
+                'just_saved' => $request->query->getBoolean('klaar'),
+                'can_edit' => !$this->campaign->claimIsOver(),
+                'last_claim_day' => $this->campaign->lastClaimDay(),
             ]));
         }
 
+        if ($response = $this->unavailable($invitation)) {
+            return $response;
+        }
+
+        $client = new Client();
+        $client->setName($invitation->getCompany());
+
+        return $this->handleForm($request, $invitation, $client, false, $em, $logos, $claimLimiter);
+    }
+
+    /** The same game, changed by the client until the claim period ends. Never a second game. */
+    #[Route('/claim/{token}/aanpassen', name: 'claim_edit', requirements: ['token' => self::TOKEN], methods: ['GET', 'POST'])]
+    public function edit(
+        string $token,
+        Request $request,
+        EntityManagerInterface $em,
+        LogoStorage $logos,
+        #[Autowire(service: 'limiter.claim_submit')] RateLimiterFactoryInterface $claimLimiter,
+    ): Response {
+        $invitation = $this->findInvitation($token);
+        $client = $invitation->getClient();
+
+        if (InvitationStatus::Claimed !== $invitation->getStatus() || null === $client) {
+            return $this->redirectToRoute('claim', ['token' => $token]);
+        }
+        if ($this->campaign->claimIsOver() || $this->campaign->isOver()) {
+            return $this->noindex($this->render('claim/unavailable.html.twig', [
+                'reason' => 'expired',
+                'last_claim_day' => $this->campaign->lastClaimDay(),
+            ], new Response('', Response::HTTP_GONE)));
+        }
+
+        return $this->handleForm($request, $invitation, $client, true, $em, $logos, $claimLimiter);
+    }
+
+    private function handleForm(
+        Request $request,
+        Invitation $invitation,
+        Client $client,
+        bool $editing,
+        EntityManagerInterface $em,
+        LogoStorage $logos,
+        RateLimiterFactoryInterface $claimLimiter,
+    ): Response {
+        $token = $invitation->getToken();
+        $form = $this->createForm(ClaimType::class, $client, ['editing' => $editing]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if (!$claimLimiter->create($request->getClientIp() ?? 'unknown')->consume()->isAccepted()) {
+                $this->addFlash('error', 'Te veel pogingen. Probeer het over een kwartier opnieuw.');
+
+                return $this->redirect($request->getUri());
+            }
+
+            if ($form->isValid()) {
+                $logo = $form->get('logo')->getData();
+                if ($logo instanceof UploadedFile) {
+                    // The old file stays: signatures pasted earlier still point to it
+                    $client->setLogoFilename($logos->store($logo));
+                }
+                if (!$editing) {
+                    $client->setActive(true);
+                    $invitation->claim($client);
+                    $em->persist($client);
+                }
+                $em->flush();
+
+                return $this->redirectToRoute('claim', ['token' => $token, 'klaar' => 1]);
+            }
+        }
+
+        return $this->noindex($this->render('claim/form.html.twig', [
+            'invitation' => $invitation,
+            'client' => $client,
+            'form' => $form,
+            'editing' => $editing,
+            'last_claim_day' => $this->campaign->lastClaimDay(),
+        ], new Response('', $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK)));
+    }
+
+    private function unavailable(Invitation $invitation): ?Response
+    {
         if (!$invitation->canBeClaimed() || $this->campaign->isOver()) {
             return $this->noindex($this->render('claim/unavailable.html.twig', ['reason' => 'gone'], new Response('', Response::HTTP_GONE)));
         }
@@ -60,37 +146,7 @@ class ClaimController extends AbstractController
             ], new Response('', Response::HTTP_GONE)));
         }
 
-        $client = new Client();
-        $client->setName($invitation->getCompany());
-        $form = $this->createForm(ClaimType::class, $client);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted()) {
-            if (!$claimLimiter->create($request->getClientIp() ?? 'unknown')->consume()->isAccepted()) {
-                $this->addFlash('error', 'Te veel pogingen. Probeer het over een kwartier opnieuw.');
-
-                return $this->redirectToRoute('claim', ['token' => $token]);
-            }
-
-            if ($form->isValid()) {
-                $logo = $form->get('logo')->getData();
-                if ($logo instanceof UploadedFile) {
-                    $client->setLogoFilename($logos->store($logo));
-                }
-                $client->setActive(true);
-                $invitation->claim($client);
-                $em->persist($client);
-                $em->flush();
-
-                return $this->redirectToRoute('claim', ['token' => $token, 'klaar' => 1]);
-            }
-        }
-
-        return $this->noindex($this->render('claim/form.html.twig', [
-            'invitation' => $invitation,
-            'form' => $form,
-            'last_claim_day' => $this->campaign->lastClaimDay(),
-        ], new Response('', $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK)));
+        return null;
     }
 
     #[Route('/afmelden/{token}', name: 'unsubscribe', requirements: ['token' => self::TOKEN], methods: ['GET', 'POST'])]

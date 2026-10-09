@@ -4,19 +4,17 @@ namespace App\Form;
 
 use App\Entity\Client;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ColorType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
-use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
  * What a client fills in on the claim page. Same fields as the admin, minus the name
- * (that comes from the invitation) and the online switch.
+ * (that comes from the invitation) and the online switch. When editing, the logo is optional.
  */
 class ClaimType extends AbstractType
 {
@@ -26,10 +24,13 @@ class ClaimType extends AbstractType
             ->add('logo', FileType::class, [
                 'label' => 'Jullie logo',
                 'mapped' => false,
-                'help' => 'PNG, JPG of WebP, max. 1 MB. Liefst met een transparante of witte achtergrond.',
+                'required' => !$options['editing'],
+                'help' => $options['editing']
+                    ? 'Laat leeg om het huidige logo te houden. PNG, JPG of WebP, max. 1 MB.'
+                    : 'PNG, JPG of WebP, max. 1 MB. Liefst met een transparante of witte achtergrond.',
                 'attr' => ['accept' => 'image/png,image/jpeg,image/webp'],
                 'constraints' => [
-                    new NotNull(message: 'Kies een logo.'),
+                    ...($options['editing'] ? [] : [new NotNull(message: 'Kies een logo.')]),
                     new File(
                         maxSize: '1M',
                         mimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
@@ -46,16 +47,12 @@ class ClaimType extends AbstractType
                 'empty_data' => '',
                 'attr' => ['maxlength' => Client::MESSAGE_MAX, 'rows' => 3, 'placeholder' => 'Fijne feesten en een sportief 2027!'],
                 'help' => \sprintf('Max. %d tekens.', Client::MESSAGE_MAX),
-            ])
-            ->add('confirm', CheckboxType::class, [
-                'label' => 'Ik heb alles nagekeken. Na publiceren kan ik niets meer aanpassen.',
-                'mapped' => false,
-                'constraints' => [new IsTrue(message: 'Vink aan dat je alles hebt nagekeken.')],
             ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(['data_class' => Client::class]);
+        $resolver->setDefaults(['data_class' => Client::class, 'editing' => false]);
+        $resolver->setAllowedTypes('editing', 'bool');
     }
 }

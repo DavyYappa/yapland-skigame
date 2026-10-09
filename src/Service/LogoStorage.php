@@ -8,6 +8,7 @@ use Symfony\Component\String\ByteString;
 
 /**
  * Logos get a random file name, so a client's name never shows up in a URL.
+ * Replaced logos are kept: signatures pasted earlier still point to them.
  */
 final class LogoStorage
 {
@@ -25,12 +26,5 @@ final class LogoStorage
         $file->move($this->directory, $filename);
 
         return $filename;
-    }
-
-    public function remove(?string $filename): void
-    {
-        if (null !== $filename && is_file($this->directory.'/'.$filename)) {
-            unlink($this->directory.'/'.$filename);
-        }
     }
 }

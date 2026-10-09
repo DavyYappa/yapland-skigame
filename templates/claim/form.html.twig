@@ -1,12 +1,18 @@
 {% extends 'base_public.html.twig' %}
 
-{% block title %}Maak jullie skigame{% endblock %}
+{% block title %}{{ editing ? 'Pas jullie skigame aan' : 'Maak jullie skigame' }}{% endblock %}
 
 {% block body %}
 <div class="intro">
     <p class="label">Voor {{ invitation.company }}</p>
-    <h1>Maak jullie eigen kerstskigame</h1>
-    <p class="muted">Kies je logo, kleuren en kerstwens. Na het publiceren krijg je meteen een stukje handtekening voor je mails of je out-of-office. Dat kan tot en met {{ last_claim_day|date('j') }} december, en één keer: daarna ligt het vast.</p>
+    {% if editing %}
+        <p><a href="{{ path('claim', {token: invitation.token}) }}">← Terug naar jullie spel</a></p>
+        <h1>Pas jullie skigame aan</h1>
+        <p class="muted">Het blijft hetzelfde spel: de link en de handtekening veranderen niet. Aanpassen kan tot en met {{ last_claim_day|date('j') }} december.</p>
+    {% else %}
+        <h1>Maak jullie eigen kerstskigame</h1>
+        <p class="muted">Kies je logo, kleuren en kerstwens. Na het publiceren krijg je meteen een stukje handtekening voor je mails of je out-of-office. Tot en met {{ last_claim_day|date('j') }} december kun je alles nog aanpassen via dezelfde link.</p>
+    {% endif %}
 </div>
 
 <div class="claim-layout">
@@ -19,20 +25,17 @@
                 {{ form_row(form.accentColor) }}
             </div>
             {{ form_row(form.message) }}
-            <div>
-                {{ form_errors(form.confirm) }}
-                <label class="check">{{ form_widget(form.confirm) }} {{ form.confirm.vars.label }}</label>
-            </div>
-            <div><button type="submit" class="btn">Publiceer mijn spel</button></div>
+            <div><button type="submit" class="btn">{{ editing ? 'Wijzigingen opslaan' : 'Publiceer ons spel' }}</button></div>
         {{ form_end(form) }}
     </section>
 
+    {% set current_logo = client.logoFilename ? asset('uploads/logos/' ~ client.logoFilename) : null %}
     <section class="card preview-card" aria-label="Voorbeeld">
         <p class="label">Zo ziet het eruit</p>
         <div class="mini-game" id="mini-game">
             <div class="mini-panel">
-                <img class="mini-logo" id="mini-logo" alt="" hidden>
-                <span class="mini-logo-placeholder" id="mini-logo-placeholder">Jullie logo</span>
+                <img class="mini-logo" id="mini-logo" alt="" {% if current_logo %}src="{{ current_logo }}"{% else %}hidden{% endif %}>
+                <span class="mini-logo-placeholder" id="mini-logo-placeholder" {{ current_logo ? 'hidden' }}>Jullie logo</span>
                 <p class="mini-message" id="mini-message">Fijne feesten en een sportief 2027!</p>
                 <span class="mini-button">Start</span>
             </div>
