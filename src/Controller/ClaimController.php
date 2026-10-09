@@ -154,20 +154,28 @@ class ClaimController extends AbstractController
     {
         $invitation = $this->findInvitation($token);
 
-        // One-click unsubscribe from the mail client (List-Unsubscribe-Post) has no CSRF token
-        $oneClick = 'List-Unsubscribe=One-Click' === $request->getContent() || $request->request->has('List-Unsubscribe');
-        if ($request->isMethod('POST') && ($oneClick || $this->isCsrfTokenValid('unsubscribe'.$token, $request->request->getString('_token')))) {
-            $invitation->unsubscribe();
-            $em->flush();
+        if ($request->isMethod('POST')) {
+            // One-click unsubscribe from the mail client (List-Unsubscribe-Post) has no CSRF token
+            $oneClick = 'List-Unsubscribe=One-Click' === $request->getContent() || $request->request->has('List-Unsubscribe');
+            if ($oneClick || $this->isCsrfTokenValid('unsubscribe'.$token, $request->request->getString('_token'))) {
+                $invitation->unsubscribe();
+                $em->flush();
 
-            if ($oneClick) {
-                return new Response('', Response::HTTP_OK);
+                if ($oneClick) {
+                    return new Response('', Response::HTTP_OK);
+                }
+
+                return $this->redirectToRoute('unsubscribe', ['token' => $token]);
             }
+
+            $this->addFlash('error', 'Dat lukte niet. Klik nog eens op "Afmelden".');
+
+            return $this->redirectToRoute('unsubscribe', ['token' => $token]);
         }
 
         return $this->noindex($this->render('claim/unsubscribe.html.twig', [
             'invitation' => $invitation,
-            'done' => InvitationStatus::Unsubscribed === $invitation->getStatus(),
+            'done' => $invitation->isUnsubscribed(),
         ]));
     }
 

@@ -1,15 +1,19 @@
 {% extends 'base_public.html.twig' %}
 
-{% block title %}Afmelden{% endblock %}
+{% block title %}{{ done ? 'Je bent afgemeld' : 'Afmelden' }}{% endblock %}
 
 {% block body %}
 <section class="card">
     {% if done %}
+        <p class="flash" role="status">Gelukt: je bent afgemeld.</p>
         <h1>Je bent afgemeld</h1>
-        <p class="muted">Je krijgt geen mails meer over de kerstskigame.</p>
+        <p class="muted">We sturen geen mails meer over de kerstskigame naar <b>{{ invitation.email }}</b>.</p>
+        {% if invitation.client %}
+            <p class="muted">Jullie spel blijft gewoon online, en via de link uit je eerste mail kun je het nog bekijken en aanpassen.</p>
+        {% endif %}
     {% else %}
         <h1>Geen mails meer over de kerstskigame?</h1>
-        <p class="muted">We sturen dan niets meer over deze actie naar {{ invitation.email }}.</p>
+        <p class="muted">We sturen dan niets meer over deze actie naar <b>{{ invitation.email }}</b>.</p>
         <form method="post">
             <input type="hidden" name="_token" value="{{ csrf_token('unsubscribe' ~ invitation.token) }}">
             <button class="btn">Afmelden</button>
