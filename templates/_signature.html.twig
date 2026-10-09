@@ -1,0 +1,21 @@
+{# The signature block a client pastes in Outlook or Gmail. Needs `client`. Inline styles only: mail clients ignore CSS. #}
+{% set game_url = url('ski_play', {token: client.token}) %}
+{% set signature %}
+<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;">
+  <tr>
+    {% if client.logoFilename %}<td style="padding:0 12px 0 0;vertical-align:middle;"><a href="{{ game_url }}"><img src="{{ absolute_url(asset('uploads/logos/' ~ client.logoFilename)) }}" alt="" height="40" style="display:block;border:0;height:40px;width:auto;"></a></td>{% endif %}
+    <td style="vertical-align:middle;background:{{ client.primaryColor }};padding:10px 16px;">
+      <a href="{{ game_url }}" style="color:{{ client.textOnPrimary }};text-decoration:none;font-size:14px;font-weight:bold;">Even weg. Speel intussen onze kerstskigame &rarr;</a>
+    </td>
+  </tr>
+</table>
+{% endset %}
+<div class="signature-preview">{{ signature|raw }}</div>
+<div class="actions">
+    <button type="button" class="btn" data-copy-rich=".signature-preview">Kopieer handtekening</button>
+    <button type="button" class="btn ghost" data-copy="#signature-html">Kopieer als HTML</button>
+</div>
+<details class="raw-html">
+    <summary>Toon de HTML</summary>
+    <textarea id="signature-html" rows="6" readonly>{{ signature|trim }}</textarea>
+</details>

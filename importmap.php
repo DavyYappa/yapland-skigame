@@ -16,6 +16,10 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
+    'claim' => [
+        'path' => './assets/claim.js',
+        'entrypoint' => true,
+    ],
     'ski' => [
         'path' => './assets/ski/game.js',
         'entrypoint' => true,

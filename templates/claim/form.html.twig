@@ -1,0 +1,43 @@
+{% extends 'base_public.html.twig' %}
+
+{% block title %}Maak jullie skigame{% endblock %}
+
+{% block body %}
+<div class="intro">
+    <p class="label">Voor {{ invitation.company }}</p>
+    <h1>Maak jullie eigen kerstskigame</h1>
+    <p class="muted">Kies je logo, kleuren en kerstwens. Na het publiceren krijg je meteen een stukje handtekening voor je mails of je out-of-office. Dat kan tot en met {{ last_claim_day|date('j') }} december, en één keer: daarna ligt het vast.</p>
+</div>
+
+<div class="claim-layout">
+    <section class="card">
+        {{ form_start(form, {attr: {class: 'stack', id: 'claim-form', novalidate: 'novalidate'}}) }}
+            {{ form_row(form.logo) }}
+            <div class="colors">
+                {{ form_row(form.primaryColor) }}
+                {{ form_row(form.secondaryColor) }}
+                {{ form_row(form.accentColor) }}
+            </div>
+            {{ form_row(form.message) }}
+            <div>
+                {{ form_errors(form.confirm) }}
+                <label class="check">{{ form_widget(form.confirm) }} {{ form.confirm.vars.label }}</label>
+            </div>
+            <div><button type="submit" class="btn">Publiceer mijn spel</button></div>
+        {{ form_end(form) }}
+    </section>
+
+    <section class="card preview-card" aria-label="Voorbeeld">
+        <p class="label">Zo ziet het eruit</p>
+        <div class="mini-game" id="mini-game">
+            <div class="mini-panel">
+                <img class="mini-logo" id="mini-logo" alt="" hidden>
+                <span class="mini-logo-placeholder" id="mini-logo-placeholder">Jullie logo</span>
+                <p class="mini-message" id="mini-message">Fijne feesten en een sportief 2027!</p>
+                <span class="mini-button">Start</span>
+            </div>
+        </div>
+        <p class="muted">Je collega's en klanten skiën tussen de bomen en door de poortjes, in jullie kleuren.</p>
+    </section>
+</div>
+{% endblock %}

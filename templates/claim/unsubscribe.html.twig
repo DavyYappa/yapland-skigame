@@ -1,0 +1,19 @@
+{% extends 'base_public.html.twig' %}
+
+{% block title %}Afmelden{% endblock %}
+
+{% block body %}
+<section class="card">
+    {% if done %}
+        <h1>Je bent afgemeld</h1>
+        <p class="muted">Je krijgt geen mails meer over de kerstskigame.</p>
+    {% else %}
+        <h1>Geen mails meer over de kerstskigame?</h1>
+        <p class="muted">We sturen dan niets meer over deze actie naar {{ invitation.email }}.</p>
+        <form method="post">
+            <input type="hidden" name="_token" value="{{ csrf_token('unsubscribe' ~ invitation.token) }}">
+            <button class="btn">Afmelden</button>
+        </form>
+    {% endif %}
+</section>
+{% endblock %}

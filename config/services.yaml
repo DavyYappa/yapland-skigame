@@ -9,6 +9,11 @@
 parameters:
     # Games stay online up to and including 31 January 2027
     app.campaign_ends_at: '2027-02-01 00:00:00 Europe/Brussels'
+    # Clients can claim a game up to and including 1 December 2026
+    app.claim_ends_at: '2026-12-02 00:00:00 Europe/Brussels'
+    # Sender of the invitation mails; MAIL_FROM in .env overrides it
+    app.mail_from_default: 'kerst@yappa.be'
+    app.mail_from: '%env(default:app.mail_from_default:MAIL_FROM)%'
 
 services:
     # default configuration for services in *this* file

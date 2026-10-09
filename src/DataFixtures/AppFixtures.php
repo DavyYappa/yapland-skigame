@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Client;
+use App\Entity\Invitation;
 use App\Entity\Score;
 use App\Entity\User;
 use App\Service\PlayerNames;
@@ -35,6 +36,7 @@ class AppFixtures extends Fixture
             ['Voorbeeld Logistiek', '#1D408E', '#A3262A', '#F6BA93', 'Wij zijn even op de latten. Vanaf 5 januari staan we weer voor je klaar.', false],
         ];
 
+        $firstClient = null;
         foreach ($examples as [$name, $primary, $secondary, $accent, $message, $active]) {
             $client = new Client();
             $client->setName($name);
@@ -44,11 +46,22 @@ class AppFixtures extends Fixture
             $client->setMessage($message);
             $client->setActive($active);
             $manager->persist($client);
+            $firstClient ??= $client;
 
             for ($i = 0; $i < 6; ++$i) {
                 $manager->persist(new Score($client, $this->names->random(), random_int(80, 900)));
             }
         }
+
+        // Example invitations: one not mailed yet, one mailed, one claimed by the first example client
+        $manager->persist(new Invitation('Voorbeeld Brouwerij', 'brouwerij@example.com'));
+        $sent = new Invitation('Voorbeeld Advocaten', 'advocaten@example.com');
+        $sent->queue();
+        $sent->markSent();
+        $manager->persist($sent);
+        $claimed = new Invitation('Voorbeeld Bakkerij', 'bakkerij@example.com');
+        $claimed->claim($firstClient);
+        $manager->persist($claimed);
 
         $manager->flush();
     }

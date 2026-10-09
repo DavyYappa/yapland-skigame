@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="nl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <title>{% block title %}Jouw kerstskigame{% endblock %} · Yapland</title>
+        {{ include('_brand.html.twig') }}
+        {% block importmap %}{{ importmap('claim') }}{% endblock %}
+    </head>
+    <body class="public">
+        {{ include('_ymark.html.twig') }}
+        <header class="topbar">
+            <span class="brand"><svg class="ymark" aria-hidden="true"><use href="#ysym"></use></svg>Kerstgame <span>van Yapland</span></span>
+        </header>
+        <main class="page narrow-page">
+            {% for message in app.flashes('error') %}
+                <p class="error" role="alert">{{ message }}</p>
+            {% endfor %}
+            {% block body %}{% endblock %}
+        </main>
+    </body>
+</html>

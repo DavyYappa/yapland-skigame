@@ -1,0 +1,37 @@
+{% extends 'base_public.html.twig' %}
+
+{% block title %}Jullie skigame staat online{% endblock %}
+
+{% set game_url = url('ski_play', {token: client.token}) %}
+
+{% block body %}
+<div class="intro">
+    <p class="label">Voor {{ invitation.company }}</p>
+    <h1>{{ just_published ? 'Jullie skigame staat online' : 'Jullie skigame' }}</h1>
+    <p class="muted">Bewaar deze pagina: hier vind je altijd je link en je handtekening terug. Het spel blijft online tot en met 31 januari 2027.</p>
+</div>
+
+<section class="card">
+    <h2>1. Probeer het zelf</h2>
+    <div class="copy-row">
+        <input type="text" id="game-url" value="{{ game_url }}" readonly aria-label="Link naar jullie spel">
+        <button type="button" class="btn ghost" data-copy="#game-url">Kopieer</button>
+    </div>
+    <p><a class="btn" href="{{ game_url }}" target="_blank" rel="noopener">Speel het spel ↗</a></p>
+</section>
+
+<section class="card">
+    <h2>2. Zet het in je handtekening</h2>
+    <p class="muted">Klik op "Kopieer handtekening" en plak het blok in je handtekening of je out-of-office.</p>
+    {{ include('_signature.html.twig') }}
+    <details class="howto">
+        <summary>Hoe plak ik dit in Outlook of Gmail?</summary>
+        <ul class="list">
+            <li><b>Outlook:</b> Instellingen → Account → Handtekeningen (of Automatische antwoorden voor je out-of-office) → plakken → Opslaan.</li>
+            <li><b>Gmail:</b> Instellingen → Alle instellingen bekijken → Algemeen → Handtekening (of Afwezigheidsassistent) → plakken → Wijzigingen opslaan.</li>
+        </ul>
+    </details>
+</section>
+
+<p class="muted small">Iets fout of wil je iets aanpassen? Mail je contactpersoon bij Yappa.</p>
+{% endblock %}

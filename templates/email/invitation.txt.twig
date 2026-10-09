@@ -1,0 +1,12 @@
+{% if test %}TESTMAIL: de links werken hier niet.
+
+{% endif %}{% for paragraph in paragraphs %}{{ paragraph }}
+
+{% endfor %}{{ button_label }}: {{ claim_url ?? '(link per bedrijf)' }}
+
+Je kunt je spel instellen tot en met {{ last_claim_day|date('j') }} december. Deze link is persoonlijk: je kunt er één spel mee maken.
+
+--
+Kerstgame van Yapland. Je krijgt deze mail omdat je klant bent bij Yappa.
+{% if unsubscribe_url %}Geen mails meer hierover: {{ unsubscribe_url }}
+{% endif %}

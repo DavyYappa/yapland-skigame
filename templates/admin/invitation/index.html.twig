@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Uitnodigingen{% endblock %}
+
+{% block body %}
+<div class="page-head">
+    <div>
+        <h1>Uitnodigingen</h1>
+        <p class="muted">Alleen wie een uitnodiging kreeg, kan een spel maken: één per uitnodiging, tot en met {{ campaign.lastClaimDay|date('d/m/Y') }}.</p>
+    </div>
+</div>
+
+<div class="stats">
+    {% for status in statuses %}
+        <div class="stat"><span class="label">{{ status.label }}</span><b class="num">{{ counts[status.value] ?? 0 }}</b></div>
+    {% endfor %}
+</div>
+
+<div class="grid">
+    <section class="card">
+        <h2>Contacten importeren</h2>
+        <p class="muted">Een CSV met twee kolommen: bedrijf en e-mailadres, gescheiden door ; of ,. Adressen die er al in staan, worden overgeslagen.</p>
+        <form method="post" action="{{ path('admin_invitations_import') }}" enctype="multipart/form-data" class="stack">
+            <input type="hidden" name="_token" value="{{ csrf_token('invitations_import') }}">
+            <div>
+                <label for="csv">CSV-bestand</label>
+                <input type="file" id="csv" name="csv" accept=".csv,text/csv" required>
+            </div>
+            <div><button class="btn">Importeren</button></div>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Mails versturen</h2>
+        {% if to_mail > 0 %}
+            <p><b>{{ to_mail }}</b> {{ to_mail == 1 ? 'nieuwe uitnodiging wacht' : 'nieuwe uitnodigingen wachten' }} op een mail.</p>
+            <p class="muted">Kijk de mail eerst na en stuur jezelf een testmail via <a href="{{ path('admin_mailing') }}">Mail</a>. Wie al een mail kreeg, krijgt er geen tweede.</p>
+            <form method="post" action="{{ path('admin_invitations_send') }}" class="confirm-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('invitations_send') }}">
+                <label class="check"><input type="checkbox" required> Ik heb de testmail nagekeken</label>
+                <div><button class="btn">Verstuur {{ to_mail }} {{ to_mail == 1 ? 'mail' : 'mails' }}</button></div>
+            </form>
+        {% else %}
+            <p class="muted">Er wachten geen nieuwe uitnodigingen. Importeer eerst contacten.</p>
+        {% endif %}
+    </section>
+</div>
+
+{% if invitations is empty %}
+    <section class="card empty">
+        <h2>Nog geen uitnodigingen</h2>
+        <p class="muted">Importeer een CSV met de klanten die je wil uitnodigen.</p>
+    </section>
+{% else %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Bedrijf</th><th>E-mailadres</th><th>Status</th><th>Verstuurd</th><th>Spel</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for invitation in invitations %}
+                    {% set status = invitation.status.value %}
+                    <tr>
+                        <td>{{ invitation.company }}</td>
+                        <td class="email">{{ invitation.email }}</td>
+                        <td><span class="pill {{ status in ['claimed'] ? 'on' : (status in ['revoked', 'unsubscribed'] ? 'off' : (status in ['sent', 'queued'] ? 'sent' : 'new')) }}">{{ invitation.status.label }}</span></td>
+                        <td class="num">{{ invitation.sentAt ? invitation.sentAt|date('d/m H:i') : '–' }}</td>
+                        <td>{% if invitation.client %}<a href="{{ path('admin_client_show', {id: invitation.client.id}) }}">Bekijk</a>{% else %}–{% endif %}</td>
+                        <td>
+                            {% if invitation.canBeClaimed %}
+                            <div class="row-actions">
+                                <button type="button" class="link" data-copy-text="{{ url('claim', {token: invitation.token}) }}">Kopieer claimlink</button>
+                                <form method="post" action="{{ path('admin_invitation_revoke', {id: invitation.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('revoke' ~ invitation.id) }}">
+                                    <button class="link danger">Intrekken</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Client;
 use App\Form\ClientType;
 use App\Repository\ClientRepository;
+use App\Repository\InvitationRepository;
 use App\Repository\ScoreRepository;
 use App\Service\Campaign;
 use App\Service\LogoStorage;
@@ -61,11 +62,12 @@ class ClientController extends AbstractController
     }
 
     #[Route('/{id}', name: 'admin_client_show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(#[MapEntity] Client $client, ScoreRepository $scores): Response
+    public function show(#[MapEntity] Client $client, ScoreRepository $scores, InvitationRepository $invitations): Response
     {
         return $this->render('admin/client/show.html.twig', [
             'client' => $client,
             'top' => $scores->top($client),
+            'invitation' => $invitations->findOneBy(['client' => $client]),
         ]);
     }
 

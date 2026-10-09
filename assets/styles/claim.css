@@ -1,0 +1,55 @@
+/* Claim pages: the admin's Yapland styles (app.css) plus the live preview */
+.narrow-page { max-width: 1040px; }
+.public .topbar { justify-content: flex-start; }
+.intro { display: grid; gap: 8px; max-width: 65ch; }
+.small { font-size: 13px; }
+
+.preview-card { position: sticky; top: 16px; }
+.claim-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 760px) {
+    .claim-layout { grid-template-columns: 1fr; }
+    /* Preview first and compact, so changes stay in view while filling in */
+    .preview-card { order: -1; position: static; }
+    .preview-card > p.muted { display: none; }
+    .mini-game { aspect-ratio: 16 / 9; }
+}
+
+
+.mini-game {
+    --primary: var(--blue);
+    --on-primary: var(--white);
+    --secondary: var(--green);
+    --accent: var(--peach);
+    position: relative;
+    aspect-ratio: 4 / 3;
+    max-width: 100%;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 18% 72%, #2F6444 0 7px, transparent 8px),
+        radial-gradient(circle at 84% 30%, #2F6444 0 6px, transparent 7px),
+        radial-gradient(circle at 70% 82%, var(--secondary) 0 4px, transparent 5px),
+        radial-gradient(circle at 30% 20%, var(--secondary) 0 4px, transparent 5px),
+        #F7FAFD;
+    border: 1px solid var(--line);
+}
+.mini-panel {
+    width: min(260px, 100%);
+    background: var(--white);
+    border-top: 5px solid var(--primary);
+    box-shadow: 0 10px 30px rgba(17, 17, 17, .14);
+    padding: 16px;
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+    text-align: center;
+}
+.mini-logo { max-width: 140px; max-height: 48px; object-fit: contain; }
+.mini-logo-placeholder { font-size: 12px; color: var(--mid); border: 1px dashed var(--line); padding: 10px 18px; }
+.mini-message { margin: 0; font-family: var(--f-display); font-weight: 600; font-size: 14px; line-height: 1.35; text-wrap: balance; overflow-wrap: anywhere; }
+.mini-button { font-family: var(--f-display); font-weight: 600; font-size: 12px; background: var(--primary); color: var(--on-primary); padding: 8px 22px; }
+
+.howto summary, .raw-html summary { cursor: pointer; color: var(--blue); font-weight: 600; }
+.howto ul { margin-top: 10px; }

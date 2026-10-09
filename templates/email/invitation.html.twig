@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ email.subject }}</title>
+</head>
+{# Mail clients ignore <style> and web fonts: inline styles, tables, system fonts. Yapland colors. #}
+<body style="margin:0;padding:0;background:#ECECEC;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ECECEC;">
+    <tr>
+        <td align="center" style="padding:24px 12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#FFFFFF;font-family:Arial,Helvetica,sans-serif;color:#111111;">
+                <tr>
+                    <td style="background:#000000;padding:18px 28px;color:#FFFFFF;font-size:13px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">
+                        Kerstgame van Yapland
+                    </td>
+                </tr>
+                {% if test %}
+                <tr>
+                    <td style="background:#FAF6B2;padding:10px 28px;font-size:13px;">
+                        Testmail: de knop en de afmeldlink werken hier niet. In de echte mail krijgt elk bedrijf een eigen link.
+                    </td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td style="padding:28px 28px 8px;font-size:16px;line-height:1.6;">
+                        {% for paragraph in paragraphs %}
+                            <p style="margin:0 0 16px;">{{ paragraph|nl2br }}</p>
+                        {% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:4px 28px 12px;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="background:#1D408E;">
+                                    <a href="{{ claim_url ?? '#' }}" style="display:inline-block;padding:14px 26px;color:#FFFFFF;font-size:16px;font-weight:bold;text-decoration:none;">{{ button_label }} &rarr;</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 28px 28px;font-size:14px;line-height:1.5;color:#5F5F5F;">
+                        Je kunt je spel instellen tot en met {{ last_claim_day|date('j') }} december. Deze link is persoonlijk: je kunt er één spel mee maken.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:16px 28px;border-top:1px solid #ECECEC;font-size:12px;line-height:1.5;color:#5F5F5F;">
+                        Je krijgt deze mail omdat je klant bent bij Yappa.
+                        {% if unsubscribe_url %}<a href="{{ unsubscribe_url }}" style="color:#5F5F5F;">Geen mails meer hierover</a>.{% endif %}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

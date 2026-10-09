@@ -37,6 +37,32 @@ Een echt account (alleen `@yappa.be`): `symfony console app:user:create naam@yap
   en naar de klant te sturen.
 - **Vindbaarheid**: elke spelpagina stuurt `X-Robots-Tag: noindex, nofollow`.
 
+## Uitnodigingen en claimen
+
+Klanten zetten hun spel zelf op, maar alleen met een uitnodiging: één spel per uitnodiging.
+
+1. **Admin → Uitnodigingen**: CSV importeren (bedrijf + e-mailadres, `;` of `,`).
+2. **Admin → Mail**: tekst aanpassen (`{bedrijf}` wordt ingevuld) en jezelf een testmail sturen.
+3. **Verstuur**: de mails gaan in de wachtrij (Messenger, tabel `messenger_messages`) en de cron
+   (`etc/crontab`, `messenger:consume async`) verstuurt ze via SendGrid.
+4. De klant opent `/claim/{token}`, kiest logo, kleuren en kerstwens met een live voorbeeld, en
+   publiceert één keer. Daarna toont dezelfde link de spel-link en de handtekening.
+5. Claimen kan tot en met 1 december (`app.claim_ends_at`). Een uitnodiging intrekken of
+   `/afmelden/{token}` maakt de link ongeldig. Elke mail heeft een `List-Unsubscribe`-header.
+
+Lokaal vangt Mailpit alle mails op: `symfony open:local:webmail`. Mails uit de wachtrij versturen:
+`symfony console messenger:consume async -vv`.
+
+Op de server in `deploy/shared/.env`:
+
+```dotenv
+MAILER_DSN=sendgrid+api://SENDGRID_API_KEY@default
+MAIL_FROM=kerst@yappa.be        # optioneel, dit is de standaard
+DEFAULT_URI=https://skigame.yappa.be
+```
+
+De basic auth geldt op de server alleen voor `/admin`, `/login` en `/logout`.
+
 ## Huisstijl
 
 Yapland-tokens in `assets/styles/tokens.css` (kleuren, Unbounded + Epilogue), gedeeld door

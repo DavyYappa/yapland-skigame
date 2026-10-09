@@ -1,0 +1,15 @@
+{% extends 'base_public.html.twig' %}
+
+{% block title %}Deze link werkt niet meer{% endblock %}
+
+{% block body %}
+<section class="card">
+    <h1>Deze link werkt niet meer</h1>
+    {% if reason == 'expired' %}
+        <p class="muted">Je kon je kerstskigame instellen tot en met {{ last_claim_day|date('j') }} december. Die termijn is voorbij.</p>
+    {% else %}
+        <p class="muted">Deze uitnodiging is ingetrokken of niet meer geldig.</p>
+    {% endif %}
+    <p class="muted">Vragen? Mail je contactpersoon bij Yappa.</p>
+</section>
+{% endblock %}

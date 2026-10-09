@@ -16,6 +16,12 @@
         <header class="topbar">
             <a class="brand" href="{{ path('admin_clients') }}"><svg class="ymark" aria-hidden="true"><use href="#ysym"></use></svg>Skikerst <span>admin</span></a>
             {% if app.user %}
+                {% set route = app.request.attributes.get('_route') %}
+                <nav class="mainnav" aria-label="Admin">
+                    <a href="{{ path('admin_clients') }}" {{ route starts with 'admin_client' ? 'aria-current="page"' }}>Klanten</a>
+                    <a href="{{ path('admin_invitations') }}" {{ route starts with 'admin_invitation' ? 'aria-current="page"' }}>Uitnodigingen</a>
+                    <a href="{{ path('admin_mailing') }}" {{ route starts with 'admin_mailing' ? 'aria-current="page"' }}>Mail</a>
+                </nav>
                 <nav>
                     <span class="muted">{{ app.user.email }}</span>
                     <a href="{{ path('app_logout') }}">Uitloggen</a>
@@ -26,6 +32,9 @@
         <main class="page">
             {% for message in app.flashes('success') %}
                 <p class="flash" role="status">{{ message }}</p>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <p class="error" role="alert">{{ message }}</p>
             {% endfor %}
             {% block body %}{% endblock %}
         </main>

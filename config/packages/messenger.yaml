@@ -1,0 +1,22 @@
+framework:
+    messenger:
+        failure_transport: failed
+
+        transports:
+            # Invitation mails wait in the database; on Combell a cron runs messenger:consume every minute
+            async:
+                dsn: 'doctrine://default?queue_name=async'
+                retry_strategy:
+                    max_retries: 3
+                    delay: 60000
+                    multiplier: 2
+            failed: 'doctrine://default?queue_name=failed'
+
+        routing:
+            App\Message\SendInvitation: async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'

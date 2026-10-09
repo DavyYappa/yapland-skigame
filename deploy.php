@@ -65,8 +65,10 @@ task('deploy:copy_index', static function (): void {
 
 after('deploy:shared', 'deploy:copy_index');
 
-// ── Staging: basic auth ─────────────────────────────────────────────────────
+// ── Basic auth on the admin ─────────────────────────────────────────────────
 //
+// Only /admin, /login and /logout: clients open /claim, /ski and /afmelden without it.
+// THE_REQUEST and not REQUEST_URI: the latter becomes /index.php after the rewrite.
 // The block goes on top of the release's .htaccess, before it is copied to www;
 // the committed public/.htaccess stays clean. .htpasswd sits next to www/, outside the docroot.
 task('deploy:basic_auth', static function (): void {
@@ -78,11 +80,13 @@ task('deploy:basic_auth', static function (): void {
     run(\sprintf('echo %s > %s && chmod 644 %s', escapeshellarg(get('basic_auth')), $htpasswd, $htpasswd));
 
     $block = <<<'HTACCESS'
-        # ── Staging: basic auth (added by deploy:basic_auth, see deploy.php) ──
-        AuthType Basic
-        AuthName "Yapland skigame"
-        AuthUserFile %s
-        Require valid-user
+        # ── Basic auth on the admin (added by deploy:basic_auth, see deploy.php) ──
+        <If "%%{THE_REQUEST} =~ m#^[A-Z]+ /(admin|login|logout)([/?\s]|$)#">
+            AuthType Basic
+            AuthName "Yapland skigame admin"
+            AuthUserFile %s
+            Require valid-user
+        </If>
 
         HTACCESS;
 
@@ -96,7 +100,19 @@ task('deploy:basic_auth', static function (): void {
         $htaccess,
         $htaccess,
     ));
-})->desc('Protect the site with basic auth (staging only)');
+})->desc('Protect the admin with basic auth');
+
+// ── Cron: mail queue and the score purge ────────────────────────────────────
+//
+// etc/crontab goes between markers into the subsite's .crontab, so a redeploy replaces it.
+task('deploy:install_crontab', static function (): void {
+    $crontab = '{{deploy_path}}/../.crontab';
+    $marker = 'yapland-skigame';
+    run(\sprintf('touch %1$s && sed -i "/#### START %2$s ####/,/#### END %2$s ####/d" %1$s', $crontab, $marker));
+    run(\sprintf('{ echo "#### START %2$s ####"; cat {{release_path}}/etc/crontab; echo "#### END %2$s ####"; } >> %1$s', $crontab, $marker));
+})->desc('Install etc/crontab');
+
+before('deploy:symlink', 'deploy:install_crontab');
 
 // public/ → www, after everything in public/ is final
 task('deploy:rsync_public_to_www', static function (): void {
